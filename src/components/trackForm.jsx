@@ -1,51 +1,62 @@
-const TrackForm = (props) => {
-  const track = props.trackId;
-  const initialTrack = {
-    artist: "",
-    title: "",
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
+const TrackForm = ({
+  handleCreateTrack,
+  trackList = [],
+  handleUpdateTrack,
+}) => {
+  const navigate = useNavigate();
+  const { trackId } = useParams();
+  const initialState = { title: "", artist: "" };
+  const [formData, setFormData] = useState(
+    trackId ? trackList.find((track) => track._id === trackId) : initialState
+  );
+
+  const handleChange = (e) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [e.target.name]: e.target.value,
+    }));
   };
 
-  const [formData, setFormData] = useState(track || initialTrack);
-  const [artist, setArtist] = useState("");
-  const [title, setTitle] = useState("");
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!track) {
-      props.createTrack(formData);
-      setFormData(initialTrack);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (trackId) {
+      handleUpdateTrack(formData, trackId);
     } else {
-      props.updateTrack(track._id, formData);
-      setFormData(initialTrack);
+      handleCreateTrack(formData);
     }
+    setFormData(initialState);
+    navigate("/");
   };
-
-  const handleChange = (event) => {
-    setFormData({ ...formData, [event.target.id]: event.target.value });
-  };
-
-  useEffect(() => {
-    track ? setFormData(track) : setFormData(initialTrack);
-  }, [track]);
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="artist">Artist</label>
-      <input
-        type="text"
-        id="artist"
-        value={formData.artist}
-        onChange={handleChange}
-      />
-      <label htmlFor="title">Title</label>
-      <input
-        type="text"
-        id="title"
-        value={formData.title}
-        onChange={handleChange}
-      />
-      <button type="submit">{track ? "Update a track" : "Add a track"}</button>
-    </form>
+    <>
+      <h2>{trackId ? "Edit track" : "Create a new track"}</h2>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="title">Title</label>
+        <input
+          type="text"
+          name="title"
+          id="title"
+          value={formData.title}
+          onChange={handleChange}
+        />
+
+        <label htmlFor="artist">Artist</label>
+        <input
+          type="text"
+          name="artist"
+          id="artist"
+          value={formData.artist}
+          onChange={handleChange}
+        />
+        <button type="submit">Submit</button>
+      </form>
+      <br />
+      <Link to="/">Back</Link>
+    </>
   );
 };
 

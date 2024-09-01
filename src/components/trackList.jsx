@@ -1,23 +1,25 @@
-const TracksList = (props) => {
-  const [playing, setPlaying] = useState({});
+import { Link } from "react-router-dom";
 
-  return (
-    <>
-      <h1>Track list</h1>
-
-      {props.tracksList.map((track) => (
-        <TracksDetails
-          key={track._id}
-          currentTrack={track}
-          remove={props.remove}
-          change={props.change}
-          setPlaying={setPlaying}
-        />
+const TrackList = ({ trackList, handleDeleteTrack, handlePlayTrack }) => (
+  <>
+    <h1>Track List</h1>
+    <Link to="/add-track">Add New Track</Link>
+    <ul>
+      {trackList.map((track) => (
+        <li key={track._id}>
+          <p>Title: {track.title}</p>
+          <p>Artist: {track.artist}</p>
+          <Link to={`/edit-track/${track._id}`}>Edit</Link>
+          <button type="button" onClick={() => handleDeleteTrack(track._id)}>
+            Delete
+          </button>
+          <button type="button" onClick={() => handlePlayTrack(track._id)}>
+            Play
+          </button>
+        </li>
       ))}
+    </ul>
+  </>
+);
 
-      <NowPlaying playing={playing} />
-    </>
-  );
-};
-
-export default TracksList;
+export default TrackList;

@@ -1,63 +1,78 @@
-import { useState, useEffect } from "react";
+import { Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
+
 import * as trackService from "./services/trackService";
-import TrackForm from "./components/trackForm";
-import TracksList from "./components/tracksList";
-import TracksDetails from "./components/trackDetails";
+import Home from "./components/Home";
+import TrackForm from "./components/TrackForm";
 
 import "./App.css";
+
 const App = () => {
-  const [showForm, setShowForm] = useState(false);
-  const [tracksList, setTracksList] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [trackList, setTrackList] = useState([]);
 
-  const create = async (formData) => {
-    const newTrack = await trackService.create(formData);
-    setTracksList([...tracksList, newTrack]);
+  const handleCreateTrack = async (formData) => {
+    const createdTrack = await trackService.createTrack(formData);
+    setTrackList((prevTrackList) => [...prevTrackList, createdTrack]);
   };
 
-  const remove = async (trackId) => {
-    const updatedTracks = await trackService.remove(trackId);
-    setTracksList(updatedTracks);
+  const handleUpdateTrack = async (formData, trackId) => {
+    try {
+      const updatedTrack = await trackService.updateTrack(formData, trackId);
+      setTrackList((prevTrackList) =>
+        prevTrackList.map((track) =>
+          track._id === updatedTrack._id ? updatedTrack : track
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update track:", error);
+    }
   };
 
-  const update = async (trackId, track) => {
-    const updatedList = await trackService.update(trackId, track);
-    setTracksList(updatedList);
+  const handleDeleteTrack = async (trackId) => {
+    try {
+      await trackService.deleteTrack(trackId);
+      setTrackList((prevTrackList) =>
+        prevTrackList.filter((track) => track._id !== trackId)
+      );
+    } catch (error) {
+      console.error("Failed to delete track:", error);
+    }
   };
 
   useEffect(() => {
-    const fetchTracks = async () => {
+    const fetchIndex = async () => {
       try {
         const data = await trackService.index();
-        setTracksList(data);
+        setTrackList(data);
       } catch (error) {
-        console.log(error);
+        console.error("Failed to fetch track list:", error);
       }
     };
-    fetchTracks();
+    fetchIndex();
   }, []);
 
   return (
-    <>
-      <button
-        onClick={() => {
-          setSelected(null);
-          setShowForm(!showForm);
-        }}
-      >
-        {showForm ? "Hide form" : "Show add track"}
-      </button>
-
-      <TracksList
-        tracksList={tracksList}
-        remove={remove}
-        change={setSelected}
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Home trackList={trackList} handleDeleteTrack={handleDeleteTrack} />
+        }
       />
-
-      {showForm && (
-        <TrackForm createTrack={create} trackId={selected} update={update} />
-      )}
-    </>
+      <Route
+        path="/add-track"
+        element={<TrackForm handleCreateTrack={handleCreateTrack} />}
+      />
+      <Route
+        path="/edit-track/:trackId"
+        element={
+          <TrackForm
+            trackList={trackList}
+            handleUpdateTrack={handleUpdateTrack}
+          />
+        }
+      />
+    </Routes>
   );
 };
 

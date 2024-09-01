@@ -1,53 +1,65 @@
-const BASE_URL = `${import.meta.env.VITE_BACK_END_SERVER_URL}`;
+const BASE_URL = `${import.meta.env.VITE_BACK_END_SERVER_URL}/tracks`;
 
 const index = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/tracks`);
-    return res.json();
+    const response = await fetch(BASE_URL);
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    return response.json();
   } catch (error) {
-    console.error(error);
+    console.error("Failed to fetch tracks:", error);
   }
 };
 
-const create = async (formData) => {
+const createTrack = async (formData) => {
   try {
-    const res = await fetch(`${BASE_URL}`, {
+    const response = await fetch(BASE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(formData),
     });
-    return res.json();
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    return response.json();
   } catch (error) {
-    console.error(error);
+    console.error("Failed to create track:", error);
   }
 };
 
-const remove = async (trackId) => {
+const updateTrack = async (formData, trackId) => {
   try {
-    const res = await fetch(`${BASE_URL}/${trackId}`, {
-      method: "DELETE",
-    });
-    return res.json();
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const update = async (trackId, formData) => {
-  try {
-    const res = await fetch(`${BASE_URL}/${trackId}`, {
+    const response = await fetch(`${BASE_URL}/${trackId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(formData),
     });
-    return res.json();
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    return response.json();
   } catch (error) {
-    console.error(error);
+    console.error("Failed to update track:", error);
   }
 };
 
-export { index, create, remove, update };
+const deleteTrack = async (trackId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/${trackId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Failed to delete track:", error);
+  }
+};
+
+export { index, createTrack, updateTrack, deleteTrack };
